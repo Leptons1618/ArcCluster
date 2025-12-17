@@ -1,0 +1,11 @@
+[application]
+name = "ArcCluster UI"
+default_platform = "web"
+out_dir = "dist"
+asset_dir = "public"
+
+[web.app]
+title = "ArcCluster Console"
+
+[web.resource]
+style = ["style.css"]

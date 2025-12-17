@@ -1,0 +1,31 @@
+{
+  "build": {
+    "beforeDevCommand": "dioxus serve --hot-reload --address 127.0.0.1 --port 1420",
+    "beforeBuildCommand": "dioxus build --release",
+    "frontendDist": "../ui/dist",
+    "devPath": "http://127.0.0.1:1420"
+  },
+  "package": {
+    "productName": "ArcCluster",
+    "version": "0.1.0"
+  },
+  "tauri": {
+    "windows": [
+      {
+        "title": "ArcCluster Console",
+        "width": 1200,
+        "height": 800,
+        "fullscreen": false,
+        "resizable": true
+      }
+    ],
+    "bundle": {
+      "identifier": "com.arccluster.app"
+    },
+    "allowlist": {
+      "shell": {
+        "open": true
+      }
+    }
+  }
+}
