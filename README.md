@@ -12,11 +12,11 @@ A local-first desktop shell (Tauri) with a Dioxus web UI scaffold for monitoring
 From the workspace root:
 
 ```
-cargo tauri dev -p arccluster-app
+cargo tauri dev
 ```
 
 Tauri will:
-- run `dioxus serve --hot-reload` on port 1420
+- run `dx serve --hot-reload` on port 1420
 - open the desktop window pointing at the dev server
 
 If you only want to preview the UI in the browser:
@@ -24,7 +24,13 @@ If you only want to preview the UI in the browser:
 ```
 cd ui
 cargo install dioxus-cli --locked # first time
-dioxus serve --hot-reload --address 127.0.0.1 --port 1420
+dx serve --addr 127.0.0.1 --port 1420 --hot-reload true --open false
+```
+
+If `dx` is not found, add Cargo to your PATH (zsh):
+```
+echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
 ```
 
 ## Build

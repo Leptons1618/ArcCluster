@@ -39,46 +39,51 @@ fn App() -> Element {
 
     use_effect(move || {
         refresh_all(face_events, clusters, ingest, errors);
-        || {}
     });
 
     rsx! {
         div { class: "page",
             header { class: "topbar",
                 div { class: "brand",
-                    span { class: "badge", "Local" }
-                    h1 { "ArcCluster Console" }
-                }
+                    span { class: "badge", "Local" },
+                    h1 { "ArcCluster Console" },
+                },
                 div { class: "actions",
-                    button { class: "ghost", "Settings" }
-                    button { class: "primary", "Start Pipeline" }
-                }
-            }
+                    button { class: "ghost", "Settings" },
+                    button { class: "primary", "Start Pipeline" },
+                },
+            },
 
             section { class: "grid",
                 div { class: "card status",
-                    h2 { "Capture" }
-                    p { class: "muted", "720p @ ≤30 FPS • local RTSP/HTTP" }
+                    h2 { "Capture" },
+                    p { class: "muted", "720p @ ≤30 FPS • local RTSP/HTTP" },
                     div { class: "status-row",
-                        span { class: "dot {if ingest.connected {"on"} else {"off"}}" }
-                        span { "{status_label(&ingest)}" }
-                    }
+                        span { class: format!("dot {}", if ingest().connected { "on" } else { "off" }) }
+                        span { status_label(&ingest()) }
+                    },
                     div { class: "status-row",
-                        span { class: "dot off" }
-                        span { "Sensors idle" }
-                    }
-                }
+                        span { class: "dot off" },
+                        span { "Sensors idle" },
+                    },
+                },
 
                 div { class: "card video",
-                    h2 { "Camera" }
-                    p { class: "muted", "Preview placeholder; plug your stream." }
+                    h2 { "Camera" },
+                    p { class: "muted", "Preview placeholder; plug your stream." },
                     div { class: "video-frame",
                         if ingest().connected {
-                            "Connected to \"{ingest().stream_url.clone().unwrap_or_else(|| "unknown".into())}\""
+                            format!(
+                                "Connected to \"{}\"",
+                                ingest()
+                                    .stream_url
+                                    .clone()
+                                    .unwrap_or_else(|| "unknown".into())
+                            )
                         } else {
                             "No stream connected"
                         }
-                    }
+                    },
                     div { class: "row",
                         input {
                             class: "text",
@@ -86,69 +91,69 @@ fn App() -> Element {
                             placeholder: "rtsp://...",
                             oninput: move |ev| stream_url.set(ev.value())
                         }
-                        button { class: "primary", onclick: move |_| spawn_connect(stream_url(), ingest, errors), "Connect" }
-                        button { class: "ghost", onclick: move |_| spawn_disconnect(ingest, errors), "Disconnect" }
-                    }
-                }
-            }
+                        button { class: "primary", onclick: move |_| spawn_connect(stream_url(), ingest, errors), "Connect" },
+                        button { class: "ghost", onclick: move |_| spawn_disconnect(ingest, errors), "Disconnect" },
+                    },
+                },
+            },
 
             section { class: "grid two",
                 div { class: "card",
-                    h3 { "Recent faces" }
+                    h3 { "Recent faces" },
                     div { class: "row",
-                        p { class: "muted", "Append-only log of detections" }
-                        button { class: "ghost", onclick: move |_| refresh_events(face_events, errors), "Refresh" }
-                    }
+                        p { class: "muted", "Append-only log of detections" },
+                        button { class: "ghost", onclick: move |_| refresh_events(face_events, errors), "Refresh" },
+                    },
                     ul { class: "list",
                         face_events().iter().map(|item| rsx! {
                             li { class: "list-row",
-                                div { class: "pill {item_class(&item.label)}", {item.label.clone()} }
-                                span { class: "muted", "{item.camera} • {item.timestamp}" }
-                                span { class: "confidence", "{(item.confidence * 100.0) as i32}%" }
+                                div { class: format!("pill {}", item_class(&item.label)), {item.label.clone()} },
+                                span { class: "muted", format!("{} • {}", item.camera, item.timestamp) },
+                                span { class: "confidence", format!("{}%", (item.confidence * 100.0) as i32) },
                             }
                         })
-                    }
-                }
+                    },
+                },
 
                 div { class: "card",
-                    h3 { "Clusters" }
+                    h3 { "Clusters" },
                     div { class: "row",
-                        p { class: "muted", "Unsupervised groups ready for labeling" }
-                        button { class: "ghost", onclick: move |_| refresh_clusters(clusters, errors), "Refresh" }
-                    }
+                        p { class: "muted", "Unsupervised groups ready for labeling" },
+                        button { class: "ghost", onclick: move |_| refresh_clusters(clusters, errors), "Refresh" },
+                    },
                     div { class: "cluster-grid",
                         clusters().iter().map(|c| rsx! {
                             div { class: "cluster",
                                 div { class: "cluster-head",
-                                    span { class: "cluster-id", "{c.id}" }
-                                    span { class: "tag {status_class(c.status)}", "{c.status}" }
-                                }
-                                p { class: "muted", "{c.faces} samples" }
-                                strong { "{c.label}" }
+                                    span { class: "cluster-id", c.id.clone() },
+                                    span { class: format!("tag {}", status_class(c.status)), c.status.clone() },
+                                },
+                                p { class: "muted", format!("{} samples", c.faces) },
+                                strong { c.label.clone() },
                                 div { class: "row",
-                                    button { class: "primary", "Review" }
-                                    button { class: "ghost", "Merge" }
+                                    button { class: "primary", "Review" },
+                                    button { class: "ghost", "Merge" },
                                 }
                             }
                         })
-                    }
-                }
-            }
+                    },
+                },
+            },
 
             section { class: "card sensors",
-                h3 { "Sensor gating" }
-                p { class: "muted", "Optionally pause or boost processing with external signals." }
+                h3 { "Sensor gating" },
+                p { class: "muted", "Optionally pause or boost processing with external signals." },
                 div { class: "chip-row",
-                    span { class: "chip", "PIR: Armed" }
-                    span { class: "chip", "Distance: 2.3 m" }
-                    span { class: "chip", "Sound: Passive" }
-                }
-            }
+                    span { class: "chip", "PIR: Armed" },
+                    span { class: "chip", "Distance: 2.3 m" },
+                    span { class: "chip", "Sound: Passive" },
+                },
+            },
 
             if !errors().is_empty() {
                 div { class: "toast",
-                    errors().iter().rev().take(1).map(|e| rsx!( span { {e.clone()} } ))
-                }
+                    errors().iter().rev().take(1).map(|e| rsx!( span { {e.clone()} } )),
+                },
             }
         }
     }
@@ -178,7 +183,7 @@ fn status_label(status: &IngestStatus) -> String {
     }
 }
 
-fn spawn_connect(url: String, ingest: Signal<IngestStatus>, errors: Signal<Vec<String>>) {
+fn spawn_connect(url: String, mut ingest: Signal<IngestStatus>, errors: Signal<Vec<String>>) {
     spawn_invoke(async move {
         match invoke_tauri::<()> ("connect_stream", json!({ "url": url })).await {
             Ok(_) => {
@@ -191,7 +196,7 @@ fn spawn_connect(url: String, ingest: Signal<IngestStatus>, errors: Signal<Vec<S
     });
 }
 
-fn spawn_disconnect(ingest: Signal<IngestStatus>, errors: Signal<Vec<String>>) {
+fn spawn_disconnect(mut ingest: Signal<IngestStatus>, errors: Signal<Vec<String>>) {
     spawn_invoke(async move {
         match invoke_tauri::<()>("disconnect_stream", json!({})).await {
             Ok(_) => ingest.set(IngestStatus { connected: false, stream_url: None }),
@@ -281,11 +286,10 @@ async fn load_ingest_status(errors: Signal<Vec<String>>) -> IngestStatus {
 
 #[cfg(target_arch = "wasm32")]
 async fn invoke_tauri<T: for<'a> serde::de::Deserialize<'a> + 'static>(
-    cmd: &str,
-    payload: serde_json::Value,
+    _cmd: &str,
+    _payload: serde_json::Value,
 ) -> Result<T, String> {
-    use tauri_sys::tauri;
-    tauri::invoke(cmd, &payload).await.map_err(|e| format!("{e}"))
+    Err("Tauri bridge unavailable".into())
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -310,7 +314,7 @@ where
     }
 }
 
-fn push_error(errors: Signal<Vec<String>>, msg: String) {
+fn push_error(mut errors: Signal<Vec<String>>, msg: String) {
     errors.with_mut(|list| {
         list.push(msg);
         if list.len() > 5 {
@@ -330,21 +334,21 @@ fn refresh_all(
     refresh_ingest(ingest, errors);
 }
 
-fn refresh_events(face_events: Signal<Vec<FaceEvent>>, errors: Signal<Vec<String>>) {
+fn refresh_events(mut face_events: Signal<Vec<FaceEvent>>, errors: Signal<Vec<String>>) {
     spawn_invoke(async move {
         let data = load_face_events(errors).await;
         face_events.set(data);
     });
 }
 
-fn refresh_clusters(clusters: Signal<Vec<Cluster>>, errors: Signal<Vec<String>>) {
+fn refresh_clusters(mut clusters: Signal<Vec<Cluster>>, errors: Signal<Vec<String>>) {
     spawn_invoke(async move {
         let data = load_clusters(errors).await;
         clusters.set(data);
     });
 }
 
-fn refresh_ingest(ingest: Signal<IngestStatus>, errors: Signal<Vec<String>>) {
+fn refresh_ingest(mut ingest: Signal<IngestStatus>, errors: Signal<Vec<String>>) {
     spawn_invoke(async move {
         let data = load_ingest_status(errors).await;
         ingest.set(data);

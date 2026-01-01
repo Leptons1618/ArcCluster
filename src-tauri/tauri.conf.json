@@ -1,8 +1,8 @@
 {
   "build": {
-    "beforeDevCommand": "dioxus serve --hot-reload --address 127.0.0.1 --port 1420",
-    "beforeBuildCommand": "dioxus build --release",
-    "frontendDist": "../ui/dist",
+    "beforeDevCommand": "cd ui && dx serve --addr 127.0.0.1 --port 1420 --hot-reload true --open false",
+    "beforeBuildCommand": "cd ui && dx build --release",
+    "distDir": "ui/dist",
     "devPath": "http://127.0.0.1:1420"
   },
   "package": {
